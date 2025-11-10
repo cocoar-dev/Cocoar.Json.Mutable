@@ -6,14 +6,16 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Allow underscores in benchmark method names -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
+    <PackageReference Include="BenchmarkDotNet" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Cocoar.Json.Mutable\Cocoar.Json.Mutable.csproj" />
+    <ProjectReference Include="..\..\Cocoar.Json.Mutable\Cocoar.Json.Mutable.csproj" />
   </ItemGroup>
 
 </Project>

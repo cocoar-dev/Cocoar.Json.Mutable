@@ -1,8 +1,9 @@
 <Solution>
-  <Folder Name="/src/">
-    <Project Path="Cocoar.Json.Mutable\Cocoar.Json.Mutable.csproj" />
-  </Folder>
   <Folder Name="/test/">
-    <Project Path="..\test\Cocoar.Json.Mutable.Tests\Cocoar.Json.Mutable.Tests.csproj" />
+    <Project Path="test\Cocoar.Json.Mutable.Tests\Cocoar.Json.Mutable.Tests.csproj" />
   </Folder>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks\Cocoar.Json.Mutable.Benchmarks\Cocoar.Json.Mutable.Benchmarks.csproj" />
+  </Folder>
+  <Project Path="Cocoar.Json.Mutable\Cocoar.Json.Mutable.csproj" />
 </Solution>
