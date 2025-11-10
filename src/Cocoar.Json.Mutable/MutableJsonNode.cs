@@ -10,8 +10,6 @@ public abstract class MutableJsonNode
     
     public abstract void WriteTo(Utf8JsonWriter writer);
     
-    internal abstract void WriteToMutable(MutableJsonWriter writer);
-    
     public override string ToString()
     {
         return $"[{GetType().Name} Kind={Kind}]";

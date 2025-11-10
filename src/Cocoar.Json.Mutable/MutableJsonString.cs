@@ -35,11 +35,6 @@ public sealed class MutableJsonString : MutableJsonNode
         writer.WriteStringValue(_utf8Value);
     }
     
-    internal override void WriteToMutable(MutableJsonWriter writer)
-    {
-        writer.WriteStringValue(_utf8Value);
-    }
-    
     internal override MutableJsonNode CloneCore()
     {
         var copy = new byte[_utf8Value.Length];

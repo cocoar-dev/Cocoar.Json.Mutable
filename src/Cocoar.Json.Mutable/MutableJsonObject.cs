@@ -121,17 +121,6 @@ public sealed class MutableJsonObject : MutableJsonNode
         writer.WriteEndObject();
     }
     
-    internal override void WriteToMutable(MutableJsonWriter writer)
-    {
-        writer.WriteStartObject();
-        foreach (var prop in _properties)
-        {
-            writer.WritePropertyName(prop.NameUtf8.Span);
-            prop.Value.WriteToMutable(writer);
-        }
-        writer.WriteEndObject();
-    }
-    
     internal override MutableJsonNode CloneCore()
     {
         var clone = new MutableJsonObject();

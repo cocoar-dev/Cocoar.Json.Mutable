@@ -30,16 +30,6 @@ public sealed class MutableJsonArray : MutableJsonNode
         writer.WriteEndArray();
     }
     
-    internal override void WriteToMutable(MutableJsonWriter writer)
-    {
-        writer.WriteStartArray();
-        foreach (var item in _items)
-        {
-            item.WriteToMutable(writer);
-        }
-        writer.WriteEndArray();
-    }
-    
     internal override MutableJsonNode CloneCore()
     {
         var clone = new MutableJsonArray();

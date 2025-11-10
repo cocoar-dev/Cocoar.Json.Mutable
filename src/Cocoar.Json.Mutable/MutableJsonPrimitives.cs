@@ -35,11 +35,6 @@ public sealed class MutableJsonNumber : MutableJsonNode
         writer.WriteRawValue(_rawUtf8, skipInputValidation: true);
     }
     
-    internal override void WriteToMutable(MutableJsonWriter writer)
-    {
-        writer.WriteNumberValue(_rawUtf8);
-    }
-    
     internal override MutableJsonNode CloneCore()
     {
         var copy = new byte[_rawUtf8.Length];
@@ -64,11 +59,6 @@ public sealed class MutableJsonBool : MutableJsonNode
         writer.WriteBooleanValue(_value);
     }
     
-    internal override void WriteToMutable(MutableJsonWriter writer)
-    {
-        writer.WriteBooleanValue(_value);
-    }
-    
     internal override MutableJsonNode CloneCore()
     {
         return new MutableJsonBool(_value);
@@ -84,11 +74,6 @@ public sealed class MutableJsonNull : MutableJsonNode
     public override JsonValueKind Kind => JsonValueKind.Null;
     
     public override void WriteTo(Utf8JsonWriter writer)
-    {
-        writer.WriteNullValue();
-    }
-    
-    internal override void WriteToMutable(MutableJsonWriter writer)
     {
         writer.WriteNullValue();
     }

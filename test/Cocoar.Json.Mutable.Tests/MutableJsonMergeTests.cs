@@ -80,4 +80,39 @@ public class MutableJsonMergeTests
             System.Text.Encoding.UTF8.GetString(clonedName.ValueUtf8)
         );
     }
+    
+    [Fact]
+    public void Parse_WithReadOnlyMemory_Works()
+    {
+        // Simulate provider giving us ReadOnlyMemory<byte>
+        byte[] jsonBytes = "{\"key\": \"value\", \"number\": 42}"u8.ToArray();
+        ReadOnlyMemory<byte> memory = new ReadOnlyMemory<byte>(jsonBytes);
+        
+        var node = MutableJsonDocument.Parse(memory);
+        
+        Assert.NotNull(node);
+        var obj = Assert.IsType<MutableJsonObject>(node);
+        Assert.NotNull(obj.Get("key"u8));
+        Assert.NotNull(obj.Get("number"u8));
+    }
+    
+    [Fact]
+    public void Parse_WithReadOnlyMemory_CanMerge()
+    {
+        // Simulate getting JSON from a provider as ReadOnlyMemory<byte>
+        byte[] json1 = "{\"server\": {\"port\": 8080}}"u8.ToArray();
+        byte[] json2 = "{\"server\": {\"host\": \"localhost\"}}"u8.ToArray();
+        
+        ReadOnlyMemory<byte> memory1 = new ReadOnlyMemory<byte>(json1);
+        ReadOnlyMemory<byte> memory2 = new ReadOnlyMemory<byte>(json2);
+        
+        var config = new MutableJsonObject();
+        MutableJsonMerge.Merge(config, (MutableJsonObject)MutableJsonDocument.Parse(memory1));
+        MutableJsonMerge.Merge(config, (MutableJsonObject)MutableJsonDocument.Parse(memory2));
+        
+        var serverObj = config.Get("server"u8) as MutableJsonObject;
+        Assert.NotNull(serverObj);
+        Assert.NotNull(serverObj.Get("port"u8));
+        Assert.NotNull(serverObj.Get("host"u8));
+    }
 }

@@ -20,10 +20,11 @@ A high-performance mutable JSON document object model (DOM) optimized for mergin
 ## Key Features
 
 ✅ **Mutable JSON structure** - Create, modify, and merge JSON documents in-memory  
-✅ **UTF-8 native** - Works directly with UTF-8 bytes using `ReadOnlySpan<byte>`  
+✅ **UTF-8 native** - Works directly with UTF-8 bytes using `ReadOnlySpan<byte>` and `ReadOnlyMemory<byte>`  
 ✅ **Efficient deep merge** - Merge multiple JSON objects with recursive merging  
 ✅ **High performance** - No unnecessary memory zeroing or security overhead  
 ✅ **Built on System.Text.Json** - Uses `Utf8JsonReader` and `Utf8JsonWriter`  
+✅ **Provider-friendly** - Accepts `ReadOnlyMemory<byte>` from data providers
 
 ## Quick Start
 
@@ -33,9 +34,13 @@ using Cocoar.Json.Mutable;
 // Create an empty document
 var doc = new MutableJsonObject();
 
-// Parse and merge multiple JSON sources
+// Parse from ReadOnlySpan<byte> or ReadOnlyMemory<byte>
 var config1 = MutableJsonDocument.Parse("{\"server\": {\"port\": 8080}}"u8);
 var config2 = MutableJsonDocument.Parse("{\"server\": {\"host\": \"localhost\"}, \"debug\": true}"u8);
+
+// Or from ReadOnlyMemory<byte> (perfect for providers!)
+ReadOnlyMemory<byte> memoryFromProvider = GetJsonFromProvider();
+var config3 = MutableJsonDocument.Parse(memoryFromProvider);
 
 // Merge them together
 MutableJsonMerge.Merge(doc, (MutableJsonObject)config1);
