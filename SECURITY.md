@@ -20,11 +20,18 @@ We will respond within 48 hours and work with you to address the issue.
 
 ## Security Best Practices
 
-When using Cocoar.Json.Zero for handling sensitive data:
-- Always dispose `JsonZeroNode` instances to ensure memory is zeroed
-- Use UTF-8 APIs (`GetByPathUtf8`, etc.) to avoid string allocations
-- Prefer `ParseFromFileAndZero` over `Parse` for sensitive files
-- Zero input byte arrays after parsing if they contain secrets
-- See [docs/security-implementation.md](docs/security-implementation.md) for detailed security guarantees and best practices
+**Important: This library is NOT designed for sensitive data handling.**
 
-Thank you for helping keep Cocoar.Json.Zero secure!
+Cocoar.Json.Mutable does not provide:
+- Memory zeroing after operations
+- Secure disposal patterns  
+- Protection against memory dumps
+
+If you're working with sensitive data (secrets, credentials, personal information), use specialized libraries designed for secure data handling.
+
+For general security when using this library:
+- Don't store sensitive data in JSON processed by this library
+- Use appropriate encryption for data at rest and in transit
+- Follow standard security practices for your application
+
+Thank you for helping keep Cocoar.Json.Mutable secure!

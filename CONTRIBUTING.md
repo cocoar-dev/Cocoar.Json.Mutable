@@ -1,4 +1,4 @@
-# Contributing to Cocoar.Json.Zero
+# Contributing to Cocoar.Json.Mutable
 
 Thank you for your interest in contributing! We welcome contributions of all kinds.
 

@@ -3,7 +3,7 @@
 "Cocoar" and related marks are trademarks of **COCOAR e.U.**
 
 ## Permitted Use
-- Using "Cocoar.Json.Zero" in unmodified form
+- Using "Cocoar.Json.Mutable" in unmodified form
 - Referencing the library by name in documentation
 - Indicating compatibility with Cocoar products
 

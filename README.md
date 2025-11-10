@@ -87,7 +87,7 @@ var cloned = MutableJsonMerge.Clone(original);
 ## When NOT to Use This
 
 - If you need immutable JSON structures (use System.Text.Json.JsonDocument)
-- If you're handling sensitive data that must be securely wiped from memory (use Cocoar.Json.Zero)
+- If you're handling sensitive data that must be securely erased from memory (this library does NOT provide memory zeroing)
 - If you only need to read JSON once without modifications (use Utf8JsonReader directly)
 
 ## License
