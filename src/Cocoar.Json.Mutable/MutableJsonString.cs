@@ -13,6 +13,11 @@ public sealed class MutableJsonString : MutableJsonNode
         _utf8Value = utf8Value;
     }
     
+    public MutableJsonString(string value)
+    {
+        _utf8Value = System.Text.Encoding.UTF8.GetBytes(value);
+    }
+    
     public static MutableJsonString FromOwned(byte[] utf8Value)
     {
         return new MutableJsonString(utf8Value);

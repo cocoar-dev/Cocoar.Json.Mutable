@@ -13,6 +13,21 @@ public sealed class MutableJsonNumber : MutableJsonNode
         _rawUtf8 = rawUtf8.ToArray();
     }
     
+    public MutableJsonNumber(int value)
+    {
+        _rawUtf8 = System.Text.Encoding.UTF8.GetBytes(value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+    }
+    
+    public MutableJsonNumber(long value)
+    {
+        _rawUtf8 = System.Text.Encoding.UTF8.GetBytes(value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+    }
+    
+    public MutableJsonNumber(double value)
+    {
+        _rawUtf8 = System.Text.Encoding.UTF8.GetBytes(value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+    }
+    
     private MutableJsonNumber(byte[] rawUtf8, bool owned)
     {
         _rawUtf8 = rawUtf8;

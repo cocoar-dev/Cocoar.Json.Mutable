@@ -36,10 +36,40 @@ public sealed class MutableJsonObject : MutableJsonNode
         }
         return null;
     }
+    
+    public MutableJsonNode? Get(string name)
+    {
+        if (_index is not null)
+        {
+            if (_index.TryGetValue(name, out var idx))
+                return _properties[idx].Value;
+            return null;
+        }
+        
+        var nameUtf8 = System.Text.Encoding.UTF8.GetBytes(name);
+        foreach (var prop in _properties)
+        {
+            if (prop.NameUtf8.Span.SequenceEqual(nameUtf8))
+                return prop.Value;
+        }
+        return null;
+    }
 
     public bool Remove(ReadOnlySpan<byte> nameUtf8)
     {
         int idx = FindPropertyIndex(nameUtf8);
+        if (idx < 0)
+            return false;
+        
+        _properties.RemoveAt(idx);
+        if (_index is not null)
+            RebuildIndex();
+        return true;
+    }
+    
+    public bool Remove(string name)
+    {
+        int idx = FindPropertyIndex(name);
         if (idx < 0)
             return false;
         
@@ -71,6 +101,29 @@ public sealed class MutableJsonObject : MutableJsonNode
         }
     }
     
+    public void Set(string name, MutableJsonNode value)
+    {
+        int existingIndex = FindPropertyIndex(name);
+        if (existingIndex >= 0)
+        {
+            var nameUtf8 = System.Text.Encoding.UTF8.GetBytes(name);
+            _properties[existingIndex] = new Property(nameUtf8, value);
+            return;
+        }
+        
+        var nameBytes = System.Text.Encoding.UTF8.GetBytes(name);
+        _properties.Add(new Property(nameBytes, value));
+        
+        if (_properties.Count >= _indexThreshold && _index is null)
+        {
+            BuildIndex();
+        }
+        else if (_index is not null)
+        {
+            _index[name] = _properties.Count - 1;
+        }
+    }
+    
     private int FindPropertyIndex(ReadOnlySpan<byte> nameUtf8)
     {
         if (_index is not null)
@@ -81,6 +134,24 @@ public sealed class MutableJsonObject : MutableJsonNode
             return -1;
         }
         
+        for (int i = 0; i < _properties.Count; i++)
+        {
+            if (_properties[i].NameUtf8.Span.SequenceEqual(nameUtf8))
+                return i;
+        }
+        return -1;
+    }
+    
+    private int FindPropertyIndex(string name)
+    {
+        if (_index is not null)
+        {
+            if (_index.TryGetValue(name, out var idx))
+                return idx;
+            return -1;
+        }
+        
+        var nameUtf8 = System.Text.Encoding.UTF8.GetBytes(name);
         for (int i = 0; i < _properties.Count; i++)
         {
             if (_properties[i].NameUtf8.Span.SequenceEqual(nameUtf8))

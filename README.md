@@ -48,11 +48,17 @@ MutableJsonMerge.Merge(doc, (MutableJsonObject)config2);
 
 // Result: {"server": {"port": 8080, "host": "localhost"}, "debug": true}
 
-// Set values directly
-doc.Set("version"u8, new MutableJsonString("1.0.0"u8.ToArray()));
+// Developer-friendly string API
+doc.Set("version", new MutableJsonString("1.0.0"));
+doc.Set("maxConnections", new MutableJsonNumber(100));
+doc.Set("enabled", new MutableJsonBool(true));
 
-// Get values
-var serverNode = doc.Get("server"u8);
+// Get values using strings (much easier!)
+var serverNode = doc.Get("server") as MutableJsonObject;
+var port = serverNode?.Get("port") as MutableJsonNumber;
+
+// Or use UTF-8 bytes for zero allocations
+var versionNode = doc.Get("version"u8);
 
 // Serialize to JSON
 var jsonBytes = MutableJsonDocument.ToUtf8Bytes(doc);
