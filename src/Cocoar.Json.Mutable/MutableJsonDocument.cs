@@ -5,11 +5,25 @@ namespace Cocoar.Json.Mutable;
 
 public static class MutableJsonDocument
 {
+    /// <summary>
+    /// Parses UTF-8 JSON bytes into a mutable JSON node.
+    /// </summary>
+    public static MutableJsonNode Parse(byte[] utf8Json)
+    {
+        return MutableJsonParser.Parse(utf8Json);
+    }
+    
+    /// <summary>
+    /// Parses UTF-8 JSON bytes into a mutable JSON node.
+    /// </summary>
     public static MutableJsonNode Parse(ReadOnlySpan<byte> utf8Json)
     {
         return MutableJsonParser.Parse(utf8Json);
     }
     
+    /// <summary>
+    /// Parses UTF-8 JSON bytes into a mutable JSON node from providers.
+    /// </summary>
     public static MutableJsonNode Parse(ReadOnlyMemory<byte> utf8Json)
     {
         return MutableJsonParser.Parse(utf8Json.Span);
