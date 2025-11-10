@@ -8,6 +8,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- Allow underscores in benchmark method names -->
     <NoWarn>$(NoWarn);CA1707</NoWarn>
+    <!-- Don't publish benchmarks to NuGet -->
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
