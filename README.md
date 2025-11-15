@@ -89,6 +89,7 @@ var cloned = MutableJsonMerge.Clone(original);
 - If you need immutable JSON structures (use System.Text.Json.JsonDocument)
 - If you're handling sensitive data that must be securely erased from memory (this library does NOT provide memory zeroing)
 - If you only need to read JSON once without modifications (use Utf8JsonReader directly)
+- If you need thread-safe concurrent access (this library is NOT thread-safe - use external synchronization if sharing instances across threads)
 
 ## License
 
