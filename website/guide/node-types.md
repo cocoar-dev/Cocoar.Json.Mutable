@@ -15,7 +15,7 @@ public abstract void WriteTo(Utf8JsonWriter writer);
 
 ## MutableJsonObject
 
-A JSON object with named properties. Properties are stored in insertion order.
+A JSON object with named properties. Properties are stored in insertion order. When `Set` overwrites an existing property, the value is replaced at its original position — the property order does not change.
 
 ```csharp
 var obj = new MutableJsonObject();
@@ -71,7 +71,9 @@ Each property is a `readonly struct` with:
 
 ## MutableJsonArray
 
-A JSON array of nodes.
+A JSON array of nodes. The API is intentionally minimal — `Add` and read-only indexing. There are no `RemoveAt`, `Insert`, or `Clear` methods. If you need a different set of items, build a new array.
+
+This matches the library's focus: merge operations replace arrays wholesale (see [Merging](/guide/merging)), so fine-grained array manipulation is rarely needed.
 
 ```csharp
 var arr = new MutableJsonArray();
@@ -81,6 +83,9 @@ arr.Add(MutableJsonNull.Instance);
 
 // Access by index
 var first = arr[0] as MutableJsonString;
+
+// Count
+int count = arr.Items.Count;
 
 // Iterate
 foreach (var item in arr.Items)
@@ -94,11 +99,12 @@ foreach (var item in arr.Items)
 A JSON string stored as UTF-8 bytes.
 
 ```csharp
-// From a .NET string (encodes to UTF-8 internally)
+// From a .NET string (encodes to a new byte[] internally)
 var str = new MutableJsonString("hello");
 
-// From raw UTF-8 bytes
-var str2 = new MutableJsonString("hello"u8.ToArray());
+// From a byte[] (stores the reference directly — no copy)
+byte[] raw = "hello"u8.ToArray();
+var str2 = new MutableJsonString(raw); // str2 and raw share the same array
 
 // Access the raw bytes
 ReadOnlySpan<byte> utf8 = str.ValueUtf8;
@@ -107,14 +113,16 @@ ReadOnlySpan<byte> utf8 = str.ValueUtf8;
 str.Replace("world"u8.ToArray());
 ```
 
-### Factory Methods
+### Constructors and Factory Methods
 
-| Method | Behavior |
-|---|---|
-| `FromOwned(byte[])` | Takes ownership of the array — no copy |
-| `FromCopy(ReadOnlySpan<byte>)` | Copies the data into a new array |
+| Method | Copies? | Description |
+|---|---|---|
+| `MutableJsonString(byte[])` | No | Stores the array reference directly |
+| `MutableJsonString(string)` | Yes (encodes) | Encodes the string to a new UTF-8 byte array |
+| `FromOwned(byte[])` | No | Same as the byte[] constructor — explicit ownership intent |
+| `FromCopy(ReadOnlySpan<byte>)` | Yes | Copies the data into a new array |
 
-Use `FromOwned` when you already have a byte array you won't reuse. Use `FromCopy` when the source data might change.
+Use the `byte[]` constructor or `FromOwned` when you have a byte array you own and want to keep a reference to (e.g., for zeroing later). Use `FromCopy` when the source data might change or be reused.
 
 ## MutableJsonNumber
 

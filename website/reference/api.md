@@ -2,6 +2,12 @@
 
 All types are in the `Cocoar.Json.Mutable` namespace. The library targets .NET 8.0.
 
+## Thread Safety
+
+This library is **not thread-safe**. No type is safe for concurrent reads and writes from multiple threads. If you need to share a `MutableJsonObject` across threads, use external synchronization (e.g., a lock).
+
+After serialization, the resulting `byte[]` is an independent copy and can be safely shared across threads.
+
 ## MutableJsonNode
 
 Abstract base class for all JSON node types.
@@ -43,8 +49,8 @@ Creates an empty object. When `indexThreshold` is -1, uses `DefaultIndexThreshol
 |---|---|---|
 | `Get(ReadOnlySpan<byte>)` | `MutableJsonNode?` | Get by UTF-8 property name |
 | `Get(string)` | `MutableJsonNode?` | Get by string property name |
-| `Set(ReadOnlySpan<byte>, MutableJsonNode)` | `void` | Set or overwrite by UTF-8 name |
-| `Set(string, MutableJsonNode)` | `void` | Set or overwrite by string name |
+| `Set(ReadOnlySpan<byte>, MutableJsonNode)` | `void` | Set or overwrite by UTF-8 name. Overwrites preserve position |
+| `Set(string, MutableJsonNode)` | `void` | Set or overwrite by string name. Overwrites preserve position |
 | `Remove(ReadOnlySpan<byte>)` | `bool` | Remove by UTF-8 name. Returns `true` if found |
 | `Remove(string)` | `bool` | Remove by string name. Returns `true` if found |
 
@@ -60,7 +66,7 @@ Creates an empty object. When `indexThreshold` is -1, uses `DefaultIndexThreshol
 
 ## MutableJsonArray
 
-Sealed. A JSON array of nodes.
+Sealed. A JSON array of nodes. Intentionally minimal — supports append and read. For removals or reordering, build a new array.
 
 ### Properties
 
@@ -82,10 +88,10 @@ Sealed. A JSON string stored as UTF-8 bytes.
 
 ### Constructors
 
-| Constructor | Description |
-|---|---|
-| `MutableJsonString(byte[])` | From UTF-8 byte array |
-| `MutableJsonString(string)` | From .NET string (encodes to UTF-8) |
+| Constructor | Copies? | Description |
+|---|---|---|
+| `MutableJsonString(byte[])` | No | Stores the array reference directly — caller retains access to the internal buffer |
+| `MutableJsonString(string)` | Yes | Encodes to a new UTF-8 byte array |
 
 ### Static Factory Methods
 
@@ -165,7 +171,9 @@ Static class. Entry point for parsing and serialization.
 | `Parse(byte[])` | `MutableJsonNode` | Parse from byte array |
 | `Parse(ReadOnlySpan<byte>)` | `MutableJsonNode` | Parse from span |
 | `Parse(ReadOnlyMemory<byte>)` | `MutableJsonNode` | Parse from memory (provider-friendly) |
-| `ParseFromStream(Stream)` | `MutableJsonNode` | Parse from stream using pooled buffers |
+| `ParseFromStream(Stream)` | `MutableJsonNode` | Parse from stream (64 KB initial buffer, grows exponentially) |
+
+All `Parse` methods throw `JsonException` for malformed input.
 
 ### Serialization
 

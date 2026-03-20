@@ -61,8 +61,8 @@ internal static class MutableJsonParser
         {
             JsonTokenType.StartObject => ReadObject(ref reader),
             JsonTokenType.StartArray => ReadArray(ref reader),
-            JsonTokenType.String => new MutableJsonString(reader.ValueSpan.ToArray()),
-            JsonTokenType.Number => new MutableJsonNumber(reader.ValueSpan.ToArray()),
+            JsonTokenType.String => MutableJsonString.FromOwned(reader.ValueSpan.ToArray()),
+            JsonTokenType.Number => MutableJsonNumber.FromOwned(reader.ValueSpan.ToArray()),
             JsonTokenType.True => new MutableJsonBool(true),
             JsonTokenType.False => new MutableJsonBool(false),
             JsonTokenType.Null => MutableJsonNull.Instance,
@@ -83,12 +83,12 @@ internal static class MutableJsonParser
                 throw new JsonException($"Expected property name, got {reader.TokenType}");
 
             var propertyName = reader.ValueSpan.ToArray();
-            
+
             if (!reader.Read())
                 throw new JsonException("Unexpected end of JSON");
 
             var value = ReadNode(ref reader);
-            obj.Set(propertyName, value);
+            obj.SetOwned(propertyName, value);
         }
 
         throw new JsonException("Unterminated object");

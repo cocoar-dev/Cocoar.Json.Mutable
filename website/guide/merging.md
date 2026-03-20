@@ -50,9 +50,30 @@ Both merge strategies follow the same rules:
 | Non-object | Yes | Any | Source replaces target value |
 | Non-object | No | — | Source added to target |
 
-The key distinction: when both source and target have the same property and both are objects, the merge recurses into the nested object rather than replacing it.
+The key distinction: when both source and target have the same property and both are objects, the merge recurses into the nested object rather than replacing it. **All other types — including arrays — are replaced entirely.**
 
-### Example: Recursive Merge
+### Arrays Are Replaced, Not Merged
+
+When both source and target have an array under the same key, the source array replaces the target array. Items are not appended or merged by index:
+
+```csharp
+var target = (MutableJsonObject)MutableJsonDocument.Parse("""
+    { "tags": ["a", "b", "c"] }
+    """u8);
+
+var source = (MutableJsonObject)MutableJsonDocument.Parse("""
+    { "tags": ["x"] }
+    """u8);
+
+MutableJsonMerge.Merge(target, source);
+
+// Result: { "tags": ["x"] }
+// The entire array was replaced — "a", "b", "c" are gone
+```
+
+This is deliberate. Array merging is inherently ambiguous (append? by-index? deduplicate?), so the library makes the simplest, most predictable choice: full replacement. If you need custom array merging logic, do it before calling `Merge`.
+
+### Example: Recursive Object Merge
 
 ```csharp
 var target = (MutableJsonObject)MutableJsonDocument.Parse("""

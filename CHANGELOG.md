@@ -5,7 +5,17 @@ All notable changes to the Cocoar.Json.Mutable project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.1] - 2026-03-20
+
+### Fixed
+- Eliminate double allocation when parsing JSON numbers (`MutableJsonNumber` constructor copied bytes that were already copied by the parser)
+- Eliminate double allocation when cloning `MutableJsonNumber` nodes
+- Eliminate double allocation of property name bytes during parsing (new internal `SetOwned` path takes ownership of the byte array directly)
+
+### Added
+- VitePress documentation site (`website/`)
+- Documentation deployment workflow (`05-deploy-docs.yml`) and auto-deploy on stable release
+- Path filters on PR validation and develop build workflows to skip builds on documentation-only changes
 
 ## [1.0.0] - 2025-11-10
 

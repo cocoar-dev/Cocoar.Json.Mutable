@@ -87,9 +87,31 @@ public sealed class MutableJsonObject : MutableJsonNode
             _properties[existingIndex] = new Property(nameUtf8.ToArray(), value);
             return;
         }
-        
+
         _properties.Add(new Property(nameUtf8.ToArray(), value));
-        
+
+        if (_properties.Count >= _indexThreshold && _index is null)
+        {
+            BuildIndex();
+        }
+        else if (_index is not null)
+        {
+            var key = System.Text.Encoding.UTF8.GetString(nameUtf8);
+            _index[key] = _properties.Count - 1;
+        }
+    }
+
+    internal void SetOwned(byte[] nameUtf8, MutableJsonNode value)
+    {
+        int existingIndex = FindPropertyIndex(nameUtf8);
+        if (existingIndex >= 0)
+        {
+            _properties[existingIndex] = new Property(nameUtf8, value);
+            return;
+        }
+
+        _properties.Add(new Property(nameUtf8, value));
+
         if (_properties.Count >= _indexThreshold && _index is null)
         {
             BuildIndex();

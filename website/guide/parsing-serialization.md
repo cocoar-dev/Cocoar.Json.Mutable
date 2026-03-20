@@ -27,6 +27,8 @@ All three overloads return a `MutableJsonNode`. For JSON objects (the most commo
 var obj = (MutableJsonObject)MutableJsonDocument.Parse(jsonBytes);
 ```
 
+All `Parse` methods throw `JsonException` for malformed input — the same exception type and error messages as `System.Text.Json`. There is no `TryParse` variant.
+
 ### From a Stream
 
 For large files or network streams, use `ParseFromStream` to avoid loading the entire payload into memory at once:
@@ -36,7 +38,7 @@ using var stream = File.OpenRead("large-config.json");
 var node = MutableJsonDocument.ParseFromStream(stream);
 ```
 
-The parser uses `ArrayPool<byte>` internally and grows the buffer as needed.
+The parser uses `ArrayPool<byte>` internally with a 64 KB initial buffer and grows it exponentially as needed. The buffer is returned to the pool after parsing — individual node values are copied into their own dedicated `byte[]` arrays.
 
 ## Serialization
 

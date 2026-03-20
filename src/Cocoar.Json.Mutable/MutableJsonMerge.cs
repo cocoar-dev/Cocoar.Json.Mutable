@@ -87,7 +87,7 @@ public static class MutableJsonMerge
         var raw = num.ValueUtf8;
         var copy = new byte[raw.Length];
         raw.CopyTo(copy);
-        return new MutableJsonNumber(copy);
+        return MutableJsonNumber.FromOwned(copy);
     }
     
     private static MutableJsonBool CloneBool(MutableJsonBool b)

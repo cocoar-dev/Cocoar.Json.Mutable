@@ -38,27 +38,30 @@ The `u8` suffix creates a `ReadOnlySpan<byte>` at compile time. No runtime encod
 
 ### Constructors
 
-`MutableJsonString` and `MutableJsonNumber` offer two ways to provide data:
+`MutableJsonString` and `MutableJsonNumber` offer multiple ways to provide data:
 
 ```csharp
-// Constructor: always copies the input
-var s = new MutableJsonString("hello"u8.ToArray());
-
-// FromOwned: takes ownership, no copy
+// Constructor (byte[]): stores the reference directly — no copy
 byte[] buffer = GetBuffer();
-var s2 = MutableJsonString.FromOwned(buffer);
+var s1 = new MutableJsonString(buffer); // s1 and buffer share the same array
+
+// Constructor (string): encodes to a new byte[] — the caller has no reference to it
+var s2 = new MutableJsonString("hello");
+
+// FromOwned: same as the byte[] constructor — takes ownership, no copy
+var s3 = MutableJsonString.FromOwned(buffer);
 
 // FromCopy: copies the span into a new array
 ReadOnlySpan<byte> span = GetSpan();
-var s3 = MutableJsonString.FromCopy(span);
+var s4 = MutableJsonString.FromCopy(span);
 ```
 
-| Method | Copies? | Use When |
-|---|---|---|
-| Constructor (`byte[]`) | No | You're passing a dedicated array |
-| Constructor (`string`) | Yes (encodes) | You have a .NET string |
-| `FromOwned(byte[])` | No | You have a byte array you won't reuse |
-| `FromCopy(ReadOnlySpan<byte>)` | Yes | The source buffer might change |
+| Method | Copies? | Caller holds reference to internal array? | Use When |
+|---|---|---|---|
+| Constructor (`byte[]`) | No | Yes | You own the array and want to keep a reference (e.g., for zeroing) |
+| Constructor (`string`) | Yes (encodes) | No | You have a .NET string |
+| `FromOwned(byte[])` | No | Yes | Same as constructor — explicit intent |
+| `FromCopy(ReadOnlySpan<byte>)` | Yes | No | The source buffer might change or be reused |
 
 ### Reading Values
 

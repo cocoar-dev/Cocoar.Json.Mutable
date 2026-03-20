@@ -79,19 +79,25 @@ The built-in JSON APIs make this problem worse:
 JsonTokenType.String => new MutableJsonString(reader.ValueSpan.ToArray())
 ```
 
-Every parsed value is copied into a dedicated `byte[]` that the caller fully owns. No shared pools, no .NET strings, no internal buffers. When you're done with a secret, you can zero the array:
+Every parsed value is copied into a dedicated `byte[]` that the caller fully owns. No shared pools, no .NET strings, no internal buffers. The caller who created or received the `byte[]` can zero it when done:
 
 ```csharp
-var secret = obj.Get("apiKey") as MutableJsonString;
-ReadOnlySpan<byte> bytes = secret.ValueUtf8;
+// Keep a reference to the byte array you own
+byte[] apiKeyBytes = GetDecryptedSecret();
+var secret = MutableJsonString.FromOwned(apiKeyBytes);
 
 // Use the secret...
+ReadOnlySpan<byte> value = secret.ValueUtf8;
 
-// Zero the owned byte array when done
-Array.Clear(secret.ValueUtf8.ToArray()); // or via the reference you kept
+// Zero the original array when done — this clears the node's internal data
+CryptographicOperations.ZeroMemory(apiKeyBytes);
 ```
 
-This is exactly how [Cocoar.Configuration](https://github.com/cocoar-dev/Cocoar.Configuration) handles secrets: `Secret<T>` wraps the owned byte arrays, provides lease-based access, and calls `Array.Clear()` on dispose — ensuring secret material never touches a .NET string and is wiped from memory as soon as the lease ends.
+::: warning
+`ValueUtf8` returns a `ReadOnlySpan<byte>` — you cannot zero through it. You must hold a reference to the original `byte[]` that was passed to the constructor or `FromOwned`. Calling `.ToArray()` on the span creates a *new* array and zeroing that copy does nothing to the node's internal data.
+:::
+
+This is exactly how [Cocoar.Configuration](https://github.com/cocoar-dev/Cocoar.Configuration) handles secrets: `Secret<T>` keeps a reference to the owned byte arrays, provides lease-based access, and calls `Array.Clear()` on dispose — ensuring secret material never touches a .NET string and is wiped from memory as soon as the lease ends.
 
 ::: info
 The library itself does not perform automatic zeroing — it provides the **mechanism** (byte array ownership). The **policy** (when and how to zero) is implemented by the consuming code, such as `Secret<T>` in Cocoar.Configuration.
