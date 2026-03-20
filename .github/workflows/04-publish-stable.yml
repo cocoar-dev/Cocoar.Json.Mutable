@@ -120,9 +120,9 @@ jobs:
 
       - name: Extract docs version
         id: docs-version
-        env:
-          VERSION: ${{ env.RELEASE_VERSION }}
         run: |
+          TAG="${{ github.event.release.tag_name }}"
+          VERSION="${TAG#v}"
           MAJOR=$(echo "$VERSION" | cut -d. -f1)
           MINOR=$(echo "$VERSION" | cut -d. -f2)
           echo "value=v${MAJOR}.${MINOR}" >> $GITHUB_OUTPUT
