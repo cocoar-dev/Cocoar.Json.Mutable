@@ -26,6 +26,10 @@ A high-performance mutable JSON document object model (DOM) optimized for mergin
 ✅ **Built on System.Text.Json** - Uses `Utf8JsonReader` and `Utf8JsonWriter`  
 ✅ **Provider-friendly** - Accepts `ReadOnlyMemory<byte>` from data providers
 
+## Documentation
+
+Full documentation is available at [docs.cocoar.dev/json-mutable](https://docs.cocoar.dev/json-mutable/).
+
 ## Quick Start
 
 ```csharp
