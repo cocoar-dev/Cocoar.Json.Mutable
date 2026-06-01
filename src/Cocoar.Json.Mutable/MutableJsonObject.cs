@@ -60,10 +60,8 @@ public sealed class MutableJsonObject : MutableJsonNode
         int idx = FindPropertyIndex(nameUtf8);
         if (idx < 0)
             return false;
-        
-        _properties.RemoveAt(idx);
-        if (_index is not null)
-            RebuildIndex();
+
+        RemoveAt(idx);
         return true;
     }
     
@@ -72,10 +70,8 @@ public sealed class MutableJsonObject : MutableJsonNode
         int idx = FindPropertyIndex(name);
         if (idx < 0)
             return false;
-        
-        _properties.RemoveAt(idx);
-        if (_index is not null)
-            RebuildIndex();
+
+        RemoveAt(idx);
         return true;
     }
     
@@ -164,27 +160,46 @@ public sealed class MutableJsonObject : MutableJsonNode
         return -1;
     }
     
-    private int FindPropertyIndex(string name)
+    internal int FindPropertyIndex(string name, bool propertyNameCaseInsensitive = false)
     {
-        if (_index is not null)
+        if (!propertyNameCaseInsensitive && _index is not null)
         {
             if (_index.TryGetValue(name, out var idx))
                 return idx;
             return -1;
         }
 
-        var nameUtf8 = System.Text.Encoding.UTF8.GetBytes(name);
+        if (!propertyNameCaseInsensitive)
+        {
+            var nameUtf8 = System.Text.Encoding.UTF8.GetBytes(name);
+            for (int i = 0; i < _properties.Count; i++)
+            {
+                if (_properties[i].NameUtf8.Span.SequenceEqual(nameUtf8))
+                    return i;
+            }
+            return -1;
+        }
+
+        var matchIndex = -1;
         for (int i = 0; i < _properties.Count; i++)
         {
-            if (_properties[i].NameUtf8.Span.SequenceEqual(nameUtf8))
-                return i;
+            if (string.Equals(_properties[i].Name, name, StringComparison.OrdinalIgnoreCase))
+                matchIndex = i;
         }
-        return -1;
+
+        return matchIndex;
     }
 
     internal void SetValueAt(int index, MutableJsonNode value)
     {
         _properties[index] = _properties[index].WithValue(value);
+    }
+
+    internal void RemoveAt(int index)
+    {
+        _properties.RemoveAt(index);
+        if (_index is not null)
+            RebuildIndex();
     }
     
     private void BuildIndex()

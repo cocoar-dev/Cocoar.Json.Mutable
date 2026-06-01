@@ -51,6 +51,7 @@ export default withMermaid(
               { text: 'Node Types', link: '/guide/node-types' },
               { text: 'Parsing & Serialization', link: '/guide/parsing-serialization' },
               { text: 'Merging', link: '/guide/merging' },
+              { text: 'Path Operations', link: '/guide/path-operations' },
             ],
           },
           {

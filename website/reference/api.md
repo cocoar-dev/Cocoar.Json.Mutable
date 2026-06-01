@@ -54,6 +54,8 @@ Creates an empty object. When `indexThreshold` is -1, uses `DefaultIndexThreshol
 | `Remove(ReadOnlySpan<byte>)` | `bool` | Remove by UTF-8 name. Returns `true` if found |
 | `Remove(string)` | `bool` | Remove by string name. Returns `true` if found |
 
+Direct object methods operate only on the current object. For nested traversal, use `MutableJsonPath`.
+
 ### Property Struct
 
 `MutableJsonObject.Property` is a `readonly struct`:
@@ -206,3 +208,38 @@ Both merge methods return the target object for chaining.
 | `PropertyNameCaseInsensitive` | `bool` | `false` | Match source property names to existing target property names using `StringComparer.OrdinalIgnoreCase`. When a match is found, the target property name casing is preserved. |
 
 Case-insensitive matching is opt-in and applies recursively to nested object merges. It may allocate additional strings for property-name matching.
+
+## MutableJsonPath
+
+Static class. Nested object traversal and mutation using explicit path segments.
+
+| Method | Return | Description |
+|---|---|---|
+| `GetAtPath(string[], MutableJsonPathOptions?)` | `MutableJsonNode?` | Traverse nested objects by path segments. Returns `null` when a segment is missing or traversal hits a non-object |
+| `GetAtPath(IReadOnlyList<string>, MutableJsonPathOptions?)` | `MutableJsonNode?` | Same as above for list-based callers |
+| `SetAtPath(string[], MutableJsonNode, MutableJsonPathOptions?)` | `void` | Set a nested value. Creates missing intermediate objects |
+| `SetAtPath(IReadOnlyList<string>, MutableJsonNode, MutableJsonPathOptions?)` | `void` | Same as above for list-based callers |
+| `RemoveAtPath(string[], MutableJsonRemovePathOptions?)` | `bool` | Remove a nested value. Returns `true` when the leaf property existed and was removed |
+| `RemoveAtPath(IReadOnlyList<string>, MutableJsonRemovePathOptions?)` | `bool` | Same as above for list-based callers |
+
+Path methods treat each string as one path segment. This means property names containing `.` are naturally supported, for example `["server.host", "port"]`.
+
+### MutableJsonPathOptions
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `PropertyNameCaseInsensitive` | `bool` | `false` | Match each path segment using `StringComparison.OrdinalIgnoreCase`. When an existing property is updated, the target property casing is preserved. |
+
+### MutableJsonRemovePathOptions
+
+Inherits from `MutableJsonPathOptions`.
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `PruneEmptyAncestors` | `bool` | `false` | After removing the leaf property, recursively remove now-empty parent objects |
+
+Current scope:
+
+- Object segments only
+- No array index syntax
+- `SetAtPath` throws `InvalidOperationException` if an intermediate segment already exists but is not an object

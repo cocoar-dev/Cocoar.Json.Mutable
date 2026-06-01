@@ -61,6 +61,9 @@ doc.Set("enabled", new MutableJsonBool(true));
 var serverNode = doc.Get("server") as MutableJsonObject;
 var port = serverNode?.Get("port") as MutableJsonNumber;
 
+// Traverse nested objects with explicit path segments
+var nestedPort = doc.GetAtPath(["server", "port"]) as MutableJsonNumber;
+
 // Or use UTF-8 bytes for zero allocations
 var versionNode = doc.Get("version"u8);
 
@@ -87,6 +90,23 @@ MutableJsonMerge.Merge(
 // Clone nodes when needed
 var cloned = MutableJsonMerge.Clone(original);
 ```
+
+## Path Operations
+
+```csharp
+// Get a nested value
+var host = config.GetAtPath(["server", "host"]);
+
+// Set a nested value and create missing intermediate objects
+config.SetAtPath(["server", "ssl", "enabled"], new MutableJsonBool(true));
+
+// Remove a nested value and prune empty parents
+config.RemoveAtPath(
+    ["server", "ssl", "enabled"],
+    new MutableJsonRemovePathOptions { PruneEmptyAncestors = true });
+```
+
+Path APIs use explicit segments, not dotted strings, so property names like `"server.host"` remain unambiguous.
 
 ## Use Cases
 
