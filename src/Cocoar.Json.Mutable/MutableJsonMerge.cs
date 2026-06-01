@@ -1,42 +1,87 @@
 namespace Cocoar.Json.Mutable;
 
+public sealed class MutableJsonMergeOptions
+{
+    public bool PropertyNameCaseInsensitive { get; init; }
+}
+
 public static class MutableJsonMerge
 {
-    public static MutableJsonObject Merge(MutableJsonObject target, MutableJsonObject source)
+    public static MutableJsonObject Merge(
+        MutableJsonObject target,
+        MutableJsonObject source,
+        MutableJsonMergeOptions? options = null)
     {
+        return MergeCore(target, source, cloneSourceValues: true, options);
+    }
+
+    public static MutableJsonObject MergeDestructive(
+        MutableJsonObject target,
+        MutableJsonObject source,
+        MutableJsonMergeOptions? options = null)
+    {
+        return MergeCore(target, source, cloneSourceValues: false, options);
+    }
+
+    private static MutableJsonObject MergeCore(
+        MutableJsonObject target,
+        MutableJsonObject source,
+        bool cloneSourceValues,
+        MutableJsonMergeOptions? options)
+    {
+        var propertyIndex = options?.PropertyNameCaseInsensitive == true
+            ? BuildCaseInsensitiveIndex(target)
+            : null;
+
         foreach (var sourceProp in source.Properties)
         {
-            var existingNode = target.Get(sourceProp.NameUtf8.Span);
+            var existingIndex = propertyIndex is not null
+                ? FindCaseInsensitiveIndex(propertyIndex, sourceProp.Name)
+                : target.FindPropertyIndex(sourceProp.NameUtf8.Span);
+
+            var existingNode = existingIndex >= 0
+                ? target.Properties[existingIndex].Value
+                : null;
             
             if (existingNode is MutableJsonObject existingObj && sourceProp.Value is MutableJsonObject sourceObj)
             {
-                Merge(existingObj, sourceObj);
+                MergeCore(existingObj, sourceObj, cloneSourceValues, options);
             }
             else
             {
-                var cloned = Clone(sourceProp.Value);
-                target.Set(sourceProp.NameUtf8.Span, cloned);
+                var value = cloneSourceValues ? Clone(sourceProp.Value) : sourceProp.Value;
+                if (existingIndex >= 0)
+                {
+                    target.SetValueAt(existingIndex, value);
+                }
+                else
+                {
+                    target.Set(sourceProp.NameUtf8.Span, value);
+                    propertyIndex?.Add(sourceProp.Name, target.Properties.Count - 1);
+                }
             }
         }
         
         return target;
     }
-    
-    public static MutableJsonObject MergeDestructive(MutableJsonObject target, MutableJsonObject source)
+
+    private static Dictionary<string, int> BuildCaseInsensitiveIndex(MutableJsonObject target)
     {
-        foreach (var sourceProp in source.Properties)
+        var propertyIndex = new Dictionary<string, int>(
+            target.Properties.Count,
+            StringComparer.OrdinalIgnoreCase);
+
+        for (var i = 0; i < target.Properties.Count; i++)
         {
-            var existingNode = target.Get(sourceProp.NameUtf8.Span);
-            if (existingNode is MutableJsonObject existingObj && sourceProp.Value is MutableJsonObject sourceObj)
-            {
-                MergeDestructive(existingObj, sourceObj);
-            }
-            else
-            {
-                target.Set(sourceProp.NameUtf8.Span, sourceProp.Value);
-            }
+            propertyIndex[target.Properties[i].Name] = i;
         }
-        return target;
+
+        return propertyIndex;
+    }
+
+    private static int FindCaseInsensitiveIndex(Dictionary<string, int> propertyIndex, string propertyName)
+    {
+        return propertyIndex.TryGetValue(propertyName, out var index) ? index : -1;
     }
     
     public static MutableJsonNode Clone(MutableJsonNode node)

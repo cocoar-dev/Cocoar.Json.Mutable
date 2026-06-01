@@ -77,6 +77,13 @@ MutableJsonMerge.Merge(target, source);
 // Destructive merge (moves source values, faster)
 MutableJsonMerge.MergeDestructive(target, source);
 
+// Optional: match property names case-insensitively during merge.
+// The target property's casing is preserved.
+MutableJsonMerge.Merge(
+    target,
+    source,
+    new MutableJsonMergeOptions { PropertyNameCaseInsensitive = true });
+
 // Clone nodes when needed
 var cloned = MutableJsonMerge.Clone(original);
 ```

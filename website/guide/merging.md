@@ -52,6 +52,46 @@ Both merge strategies follow the same rules:
 
 The key distinction: when both source and target have the same property and both are objects, the merge recurses into the nested object rather than replacing it. **All other types — including arrays — are replaced entirely.**
 
+### Case-Insensitive Property Names
+
+By default, property names are matched case-sensitively. This follows JSON's normal behavior, so `property` and `Property` are treated as two different properties:
+
+```csharp
+var target = (MutableJsonObject)MutableJsonDocument.Parse(
+    """{ "property": "target" }"""u8);
+
+var source = (MutableJsonObject)MutableJsonDocument.Parse(
+    """{ "Property": "source" }"""u8);
+
+MutableJsonMerge.Merge(target, source);
+
+// Result: { "property": "target", "Property": "source" }
+```
+
+If you want behavior similar to `System.Text.Json` deserialization with `PropertyNameCaseInsensitive`, enable it explicitly:
+
+```csharp
+var target = (MutableJsonObject)MutableJsonDocument.Parse(
+    """{ "property": "target" }"""u8);
+
+var source = (MutableJsonObject)MutableJsonDocument.Parse(
+    """{ "Property": "source" }"""u8);
+
+MutableJsonMerge.Merge(
+    target,
+    source,
+    new MutableJsonMergeOptions { PropertyNameCaseInsensitive = true });
+
+// Result: { "property": "source" }
+// The target property name casing is preserved.
+```
+
+This option applies recursively to nested objects and is available for both `Merge` and `MergeDestructive`.
+
+When case-insensitive matching is enabled, the target property name always wins. If the target already contains multiple property names that only differ by casing, the last matching target property in object order is updated. Source properties are still processed in order, so later source values can overwrite earlier source values.
+
+Enabling this option may allocate additional strings for property-name matching. This is intentional: `Cocoar.Json.Mutable` stores JSON values as UTF-8 bytes to avoid unnecessary value-string allocation, but property names are not treated as secret payload data.
+
 ### Arrays Are Replaced, Not Merged
 
 When both source and target have an array under the same key, the source array replaces the target array. Items are not appended or merged by index:

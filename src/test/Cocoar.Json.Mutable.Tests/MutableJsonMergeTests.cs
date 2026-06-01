@@ -41,6 +41,86 @@ public class MutableJsonMergeTests
         Assert.NotNull(serverNode.Get("host"u8));
         Assert.NotNull(target.Get("debug"u8));
     }
+
+    [Fact]
+    public void Merge_ByDefault_TreatsDifferentCasingAsDifferentProperties()
+    {
+        var target = new MutableJsonObject();
+        target.Set("property"u8, new MutableJsonString("target"u8.ToArray()));
+
+        var source = new MutableJsonObject();
+        source.Set("Property"u8, new MutableJsonString("source"u8.ToArray()));
+
+        MutableJsonMerge.Merge(target, source);
+
+        Assert.Equal(2, target.Properties.Count);
+        Assert.Equal("target", GetStringValue(target.Get("property"u8)));
+        Assert.Equal("source", GetStringValue(target.Get("Property"u8)));
+    }
+
+    [Fact]
+    public void Merge_WithCaseInsensitivePropertyNames_ReplacesExistingValueAndKeepsTargetName()
+    {
+        var target = new MutableJsonObject();
+        target.Set("property"u8, new MutableJsonString("target"u8.ToArray()));
+
+        var source = new MutableJsonObject();
+        source.Set("Property"u8, new MutableJsonString("source"u8.ToArray()));
+
+        MutableJsonMerge.Merge(
+            target,
+            source,
+            new MutableJsonMergeOptions { PropertyNameCaseInsensitive = true });
+
+        Assert.Single(target.Properties);
+        Assert.Equal("property", target.Properties[0].Name);
+        Assert.Equal("source", GetStringValue(target.Get("property"u8)));
+        Assert.Null(target.Get("Property"u8));
+    }
+
+    [Fact]
+    public void Merge_WithCaseInsensitivePropertyNames_MergesNestedObjectsAndKeepsTargetNames()
+    {
+        var target = (MutableJsonObject)MutableJsonDocument.Parse(
+            """{ "server": { "host": "0.0.0.0", "port": 8080 } }"""u8);
+        var source = (MutableJsonObject)MutableJsonDocument.Parse(
+            """{ "Server": { "Host": "localhost" } }"""u8);
+
+        MutableJsonMerge.Merge(
+            target,
+            source,
+            new MutableJsonMergeOptions { PropertyNameCaseInsensitive = true });
+
+        Assert.Single(target.Properties);
+        Assert.Equal("server", target.Properties[0].Name);
+
+        var server = Assert.IsType<MutableJsonObject>(target.Get("server"u8));
+        Assert.Equal(2, server.Properties.Count);
+        Assert.Equal("host", server.Properties[0].Name);
+        Assert.Equal("localhost", GetStringValue(server.Get("host"u8)));
+        Assert.NotNull(server.Get("port"u8));
+    }
+
+    [Fact]
+    public void MergeDestructive_WithCaseInsensitivePropertyNames_MovesSourceValueAndKeepsTargetName()
+    {
+        var target = new MutableJsonObject();
+        target.Set("property"u8, new MutableJsonString("target"u8.ToArray()));
+
+        var sourceValue = new MutableJsonString("source"u8.ToArray());
+        var source = new MutableJsonObject();
+        source.Set("Property"u8, sourceValue);
+
+        MutableJsonMerge.MergeDestructive(
+            target,
+            source,
+            new MutableJsonMergeOptions { PropertyNameCaseInsensitive = true });
+
+        Assert.Single(target.Properties);
+        Assert.Equal("property", target.Properties[0].Name);
+        Assert.Same(sourceValue, target.Get("property"u8));
+        Assert.Null(target.Get("Property"u8));
+    }
     
     [Fact]
     public void Merge_FromParsedJson_Works()
@@ -114,5 +194,11 @@ public class MutableJsonMergeTests
         Assert.NotNull(serverObj);
         Assert.NotNull(serverObj.Get("port"u8));
         Assert.NotNull(serverObj.Get("host"u8));
+    }
+
+    private static string GetStringValue(MutableJsonNode? node)
+    {
+        var value = Assert.IsType<MutableJsonString>(node);
+        return System.Text.Encoding.UTF8.GetString(value.ValueUtf8);
     }
 }

@@ -192,7 +192,17 @@ Static class. Merging and cloning operations.
 | Method | Return | Description |
 |---|---|---|
 | `Merge(MutableJsonObject, MutableJsonObject)` | `MutableJsonObject` | Non-destructive merge — clones source values |
+| `Merge(MutableJsonObject, MutableJsonObject, MutableJsonMergeOptions?)` | `MutableJsonObject` | Non-destructive merge with options |
 | `MergeDestructive(MutableJsonObject, MutableJsonObject)` | `MutableJsonObject` | Destructive merge — moves source values |
+| `MergeDestructive(MutableJsonObject, MutableJsonObject, MutableJsonMergeOptions?)` | `MutableJsonObject` | Destructive merge with options |
 | `Clone(MutableJsonNode)` | `MutableJsonNode` | Deep clone any node |
 
 Both merge methods return the target object for chaining.
+
+## MutableJsonMergeOptions
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `PropertyNameCaseInsensitive` | `bool` | `false` | Match source property names to existing target property names using `StringComparer.OrdinalIgnoreCase`. When a match is found, the target property name casing is preserved. |
+
+Case-insensitive matching is opt-in and applies recursively to nested object merges. It may allocate additional strings for property-name matching.

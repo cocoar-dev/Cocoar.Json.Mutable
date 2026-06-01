@@ -146,7 +146,7 @@ public sealed class MutableJsonObject : MutableJsonNode
         }
     }
     
-    private int FindPropertyIndex(ReadOnlySpan<byte> nameUtf8)
+    internal int FindPropertyIndex(ReadOnlySpan<byte> nameUtf8)
     {
         if (_index is not null)
         {
@@ -172,7 +172,7 @@ public sealed class MutableJsonObject : MutableJsonNode
                 return idx;
             return -1;
         }
-        
+
         var nameUtf8 = System.Text.Encoding.UTF8.GetBytes(name);
         for (int i = 0; i < _properties.Count; i++)
         {
@@ -180,6 +180,11 @@ public sealed class MutableJsonObject : MutableJsonNode
                 return i;
         }
         return -1;
+    }
+
+    internal void SetValueAt(int index, MutableJsonNode value)
+    {
+        _properties[index] = _properties[index].WithValue(value);
     }
     
     private void BuildIndex()
@@ -241,5 +246,7 @@ public sealed class MutableJsonObject : MutableJsonNode
         public MutableJsonNode Value => _value;
         
         public string Name => System.Text.Encoding.UTF8.GetString(_nameUtf8);
+
+        internal Property WithValue(MutableJsonNode value) => new(_nameUtf8, value);
     }
 }
