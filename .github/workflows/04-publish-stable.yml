@@ -141,7 +141,7 @@ jobs:
             -H "Authorization: Bearer $KEY" \
             -H "Content-Type: application/zip" \
             --data-binary @$GITHUB_WORKSPACE/docs.zip \
-            "${URL}/api/products/json-mutable/versions/${VER}"
+            "${URL}/_api/products/json-mutable/versions/${VER}"
 
       - name: Docs deployment summary
         run: |
