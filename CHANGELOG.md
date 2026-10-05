@@ -5,6 +5,11 @@ All notable changes to the Cocoar.Json.Mutable project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-10-05
+
+### Fixed
+- Parsed strings and property names are held as their value: escape sequences of the source text (unicode escapes, backslash sequences, escaped quotes) are decoded on parse instead of being kept and escaped a second time on write. A string containing non-ASCII characters, quotes, backslashes, control characters or `+ & ' < >` no longer changes on a parse/write round trip, and `MutableJsonString.ValueUtf8` now returns the same bytes for a parsed string as for one created from a .NET string.
+
 ## [1.2.0] - 2026-06-01
 
 ### Added
